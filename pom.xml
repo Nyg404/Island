@@ -68,5 +68,23 @@
             <version>1.21.3-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>ru.thisistails.tailslib</groupId>
+            <artifactId>tailslib</artifactId>
+            <version>1.7-alpha</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>ru.thisistails.tailslib</groupId>
+            <artifactId>tailslib</artifactId>
+            <version>1.7-alpha</version>
+            <classifier>javadoc</classifier>
+        </dependency>
+        <dependency>
+            <groupId>ru.thisistails.tailslib</groupId>
+            <artifactId>tailslib</artifactId>
+            <version>1.7-alpha</version>
+            <classifier>sources</classifier>
+        </dependency>
     </dependencies>
 </project>

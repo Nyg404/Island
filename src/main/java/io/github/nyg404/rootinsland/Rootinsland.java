@@ -3,7 +3,6 @@ package io.github.nyg404.rootinsland;
 import io.github.nyg404.rootinsland.CommandsLister.CommandsCreate;
 import io.github.nyg404.rootinsland.CommandsLister.CommandsIsland;
 import io.github.nyg404.rootinsland.CommandsLister.PlayerJoin;
-import io.github.nyg404.rootinsland.World.WorldBorderManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,7 +17,6 @@ public final class Rootinsland extends JavaPlugin {
 
         // Передаем экземпляр плагина в обработчик событий PlayerJoin
         getServer().getPluginManager().registerEvents(new PlayerJoin(this), this);
-        getServer().getPluginManager().registerEvents(new WorldBorderManager(), this);
     }
 
     @Override
