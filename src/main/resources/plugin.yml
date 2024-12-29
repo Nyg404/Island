@@ -1,0 +1,17 @@
+name: rootinsland
+version: '1.0'
+main: io.github.nyg404.rootinsland.Rootinsland
+api-version: '1.21'
+prefix: &Island
+load: STARTUP
+authors: [ Nagust, Thisistails ]
+description: Плагин для сервера
+commands:
+  god:
+    description: god
+    usage: /<command>
+  is:
+    description: Управление островами
+    usage: /is <tp> <player>
+    permission: rootplaginisland.tp
+    permission-message: У вас нет прав на выполнение этой команды.
