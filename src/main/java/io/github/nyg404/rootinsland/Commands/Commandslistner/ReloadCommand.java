@@ -1,4 +1,4 @@
-package io.github.nyg404.rootinsland.CommandsLister;
+package io.github.nyg404.rootinsland.Commands.Commandslistner;
 
 import io.github.nyg404.rootinsland.Rootinsland;
 import org.bukkit.command.Command;

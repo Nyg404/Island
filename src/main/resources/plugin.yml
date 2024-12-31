@@ -6,6 +6,7 @@ prefix: &Island
 load: STARTUP
 authors: [ Nagust, Thisistails ]
 description: Плагин для сервера
+depend: [LuckPerms]
 commands:
   god:
     description: god
@@ -21,3 +22,5 @@ commands:
   party:
     description: Управление пати.
     usage: /party <invite|accept|deny|disband>
+  border:
+    description: Управление пати.

@@ -7,11 +7,19 @@ import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
 
+import io.github.nyg404.rootinsland.Manager.WorldConfigManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatColor;
 
 public class PlayerWorldCreate {
+    
+    private final WorldConfigManager configManager;
+
+    // Конструктор с передачей configManager
+    public PlayerWorldCreate(WorldConfigManager configManager) {
+        this.configManager = configManager;
+    }
 
     public void createplayerworld(Player player, String worldname) {
         // Попытка получить шаблонный мир
@@ -41,10 +49,10 @@ public class PlayerWorldCreate {
             // Телепортируем игрока в центр мира
             Location playerLocation = new Location(world, 0, 82, 0);
             player.teleport(playerLocation);
+            configManager.saveWorldInfo(player.getName(), player.getName(), 100);
 
             // Показываем титул игроку
             player.showTitle(Title.title(Component.text(ChatColor.DARK_RED + "Ваш мир создан!"), Component.text("")));
-
         } else {
             player.sendMessage(Component.text(ChatColor.DARK_RED + "Не удалось загрузить мир. Обратитесь в администрацию"));
         }
