@@ -15,3 +15,9 @@ commands:
     usage: /is <tp> <player>
     permission: rootplaginisland.tp
     permission-message: У вас нет прав на выполнение этой команды.
+  reloadconfig:
+    description: Релоадет
+    permission: rootplaginisland.reloadconfig
+  party:
+    description: Управление пати.
+    usage: /party <invite|accept|deny|disband>

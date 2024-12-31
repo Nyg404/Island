@@ -28,7 +28,8 @@ public class ChatListener implements Listener {
         String message = event.getMessage();
 
         // Получаем радиус чата из конфигурации
-        double chatRadius = plugin.getChatRadius(); // Загружаем радиус из конфига
+        double chatRadius = plugin.getCustomConfig().getDouble("distant-localchat", 100);
+
 
         // Проверяем, начинается ли сообщение с префикса "!" для глобального чата
         if (message.startsWith("!")) {
