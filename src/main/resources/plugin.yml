@@ -22,5 +22,11 @@ commands:
   party:
     description: Управление пати.
     usage: /party <invite|accept|deny|disband>
-  border:
-    description: Управление пати.
+  bordercheck:
+    description: Чекает барьер
+    permission: rootinsland.bordercheck
+    permission-message: У вас нет прав на выполнение этой команды.
+  borderupdate:
+    description: Обновляет барьер
+    permission: rootinsland.borderupdate
+    permission-message: У вас нет прав на выполнение этой команды.

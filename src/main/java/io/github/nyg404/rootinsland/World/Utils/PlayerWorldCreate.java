@@ -6,14 +6,12 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
-
-import io.github.nyg404.rootinsland.Manager.WorldConfigManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import net.md_5.bungee.api.ChatColor;
 
 public class PlayerWorldCreate {
-    
+
     private final WorldConfigManager configManager;
 
     // Конструктор с передачей configManager
@@ -21,7 +19,8 @@ public class PlayerWorldCreate {
         this.configManager = configManager;
     }
 
-    public void createplayerworld(Player player, String worldname) {
+    // Обратите внимание на название метода createPlayerWorld с заглавной буквы P и W
+    public void createPlayerWorld(Player player, String worldName) {
         // Попытка получить шаблонный мир
         World templateWorld = Bukkit.getWorld("template_world");
 
@@ -44,15 +43,23 @@ public class PlayerWorldCreate {
             world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false); // Отключаем смену дня/ночи
             world.setGameRule(GameRule.DO_MOB_SPAWNING, false); // Отключаем спавн мобов
             world.getWorldBorder().setCenter(0, 0); // Центр мира
-            world.getWorldBorder().setSize(50, 50); // Устанавливаем размер мира 100x100
+
+            // Получаем размер барьера для игрока через PlayerPermission (передаём playerPermission)
+            int barrierSize = configManager.getBarrierSize(player.getName());
+
+            // Устанавливаем размер барьера в зависимости от прав игрока
+            world.getWorldBorder().setSize(barrierSize);
 
             // Телепортируем игрока в центр мира
             Location playerLocation = new Location(world, 0, 82, 0);
             player.teleport(playerLocation);
-            configManager.saveWorldInfo(player.getName(), player.getName(), 100);
+
+            // Сохраняем информацию о мире в конфигурации (например, сохранение барьера)
+            configManager.saveWorldInfo(player.getName(), worldNamePlayer, barrierSize);
 
             // Показываем титул игроку
             player.showTitle(Title.title(Component.text(ChatColor.DARK_RED + "Ваш мир создан!"), Component.text("")));
+
         } else {
             player.sendMessage(Component.text(ChatColor.DARK_RED + "Не удалось загрузить мир. Обратитесь в администрацию"));
         }

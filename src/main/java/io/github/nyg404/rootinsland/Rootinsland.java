@@ -1,17 +1,18 @@
 package io.github.nyg404.rootinsland;
 
 import io.github.nyg404.rootinsland.Chat.ChatListener;
-import io.github.nyg404.rootinsland.Commands.Commandslistner.BorderCommand;
+import io.github.nyg404.rootinsland.Commands.Commandslistner.BorderCheckCommand;
+import io.github.nyg404.rootinsland.Commands.Commandslistner.BorderDonatPlusCommand;
 import io.github.nyg404.rootinsland.Commands.Commandslistner.CommandsCreate;
 import io.github.nyg404.rootinsland.Commands.Commandslistner.CommandsIsland;
 import io.github.nyg404.rootinsland.Commands.Commandslistner.ReloadCommand;
-import io.github.nyg404.rootinsland.Commands.TabCommands.BorderTabComplete;
+
 import io.github.nyg404.rootinsland.Commands.TabCommands.TeamTabCompleter;
 import io.github.nyg404.rootinsland.CommandsLister.PlayerJoin;
 import io.github.nyg404.rootinsland.CommandsLister.TeamCommand;
 import io.github.nyg404.rootinsland.Manager.TeamManager;
-import io.github.nyg404.rootinsland.Manager.WorldConfigManager;
-import io.github.nyg404.rootinsland.Permission.Playerpermisson;
+import io.github.nyg404.rootinsland.World.Utils.WorldConfigManager;
+import io.github.nyg404.rootinsland.Permission.PlayerPermission;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -28,7 +29,7 @@ public final class Rootinsland extends JavaPlugin {
     private WorldConfigManager worldConfigManager;
     private FileConfiguration customConfig;
     private LuckPerms luckPerms;
-    private Playerpermisson playerPermissions;
+    private PlayerPermission playerPermissions;
     private WorldConfigManager configManager = new WorldConfigManager(this);  // 'this' — это экземпляр плагина
 
     public FileConfiguration getCustomConfig() {
@@ -85,10 +86,11 @@ public final class Rootinsland extends JavaPlugin {
         getCommand("reloadconfig").setExecutor(new ReloadCommand(this));
         getCommand("party").setExecutor(new TeamCommand(teamManager));
         getCommand("party").setTabCompleter(new TeamTabCompleter());
+        getCommand("bordercheck").setExecutor(new BorderCheckCommand(playerPermissions));
+        getCommand("borderupdate").setExecutor(new BorderDonatPlusCommand(playerPermissions, worldConfigManager));
 
         // Регистрация новых команд
-        getCommand("border").setExecutor(new BorderCommand(playerPermissions, configManager));
-        getCommand("border").setTabCompleter(new BorderTabComplete());
+
 
         // Регистрация событий
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
@@ -112,7 +114,7 @@ public final class Rootinsland extends JavaPlugin {
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
             luckPerms = provider.getProvider();
-            playerPermissions = new Playerpermisson(luckPerms);  // Инициализируем Playerpermisson с luckPerms
+            playerPermissions = new PlayerPermission(luckPerms, worldConfigManager);  // Инициализируем Playerpermisson с luckPerms
             return true;
         }
         return false;
