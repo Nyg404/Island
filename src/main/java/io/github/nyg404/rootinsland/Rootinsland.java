@@ -16,12 +16,10 @@ import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Team;
 
 public final class Rootinsland extends JavaPlugin {
 
     private TeamManager teamManager;
-    // Добавляем переменную customConfig
     private FileConfiguration customConfig;
 
     public FileConfiguration getCustomConfig() {
@@ -29,35 +27,20 @@ public final class Rootinsland extends JavaPlugin {
     }
 
     public double distance() {
-        return customConfig.getDouble("distant-localchat", 100);  // Читаем значение из island/config/config.yml
+        return customConfig.getDouble("distant-localchat", 100);
     }
 
     @Override
     public void onEnable() {
-
         teamManager = new TeamManager(this);
-        // Plugin startup logic
-        File configDir = new File(getDataFolder(), "island/config");
-        if (!configDir.exists()) {
-            configDir.mkdirs();  // Создаём папку, если её нет
-        }
-    
-        // Загружаем или сохраняем конфигурацию, если её нет
-        File configFile = new File(configDir, "config.yml");
+
+        File configFile = new File(getDataFolder(), "island/config/config.yml");
         if (!configFile.exists()) {
-            // Сохраняем ресурс config.yml в корень плагина
-            saveResource("config.yml", false);
-    
-            // Перемещаем файл в нужную директорию
-            File movedFile = new File(configDir, "config.yml");
-            if (configFile.renameTo(movedFile)) {
-                getLogger().info("Config moved to island/config/");
-            } else {
-                getLogger().warning("Failed to move config to island/config/");
-            }
+            saveResource("island/config/config.yml", false);
+            getLogger().info("Default config created at island/config/config.yml");
         }
-        // Загружаем customConfig
-        customConfig = YamlConfiguration.loadConfiguration(configFile);
+
+        reloadCustomConfig();
 
         getCommand("god").setExecutor(new CommandsCreate());
         getCommand("is").setExecutor(new CommandsIsland());
@@ -65,18 +48,12 @@ public final class Rootinsland extends JavaPlugin {
         getCommand("party").setExecutor(new TeamCommand(teamManager));
         getCommand("party").setTabCompleter(new TeamTabCompleter());
 
-        // Регистрируем обработчики событий
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerJoin(this), this);
-
-        saveDefaultConfig();  // Создаёт config.yml, если его нет
-        int distance = getConfig().getInt("distant-localchat", 50);  // 50 - значение по умолчанию
-        getLogger().info("Distant Local Chat: " + distance);
     }
 
     @Override
     public void onDisable() {
-        // Сохраняем миры в основном потоке
         Bukkit.getScheduler().runTask(this, () -> {
             for (World world : Bukkit.getWorlds()) {
                 world.save();
@@ -85,13 +62,21 @@ public final class Rootinsland extends JavaPlugin {
     }
 
     public void reloadCustomConfig() {
-        // Перезагружаем customConfig, проверяя правильный путь
         File configFile = new File(getDataFolder(), "island/config/config.yml");
         if (configFile.exists()) {
             customConfig = YamlConfiguration.loadConfiguration(configFile);
             getLogger().info("Custom config reloaded!");
         } else {
             getLogger().warning("Config file not found!");
+        }
+    }
+
+    public void saveCustomConfig() {
+        try {
+            customConfig.save(new File(getDataFolder(), "island/config/config.yml"));
+            getLogger().info("Custom config saved!");
+        } catch (Exception e) {
+            getLogger().warning("Failed to save custom config: " + e.getMessage());
         }
     }
 }
