@@ -16,14 +16,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import io.github.nyg404.rootinsland.Rootinsland;
 import io.github.nyg404.rootinsland.BredKakoito.TeamYml;
-import net.kyori.adventure.text.Component;
-import net.md_5.bungee.api.ChatColor;
 
 public class TeamManager {
-
-
 
     private final Map<UUID, TeamYml> parties = new HashMap<>();
     private final Map<UUID, UUID> pendparties = new HashMap<>();
@@ -59,27 +54,35 @@ public class TeamManager {
             return;
         }
     
+        // Проверка, является ли игрок уже владельцем другой команды
+        if (parties.containsKey(target.getUniqueId())) {
+            inviter.sendMessage(target.getName() + " уже является владельцем другой команды.");
+            return;
+        }
+    
         // Проверка, является ли игрок уже частью команды
         if (parties.values().stream().anyMatch(team -> team.getMembers().contains(target.getUniqueId()))) {
             inviter.sendMessage(target.getName() + " уже является членом другой команды.");
             return;
         }
     
+        // Проверка на наличие приглашения
         if (pendparties.containsKey(target.getUniqueId())) {
             inviter.sendMessage(target.getName() + " уже имеет приглашение.");
             return;
         }
     
         pendparties.put(target.getUniqueId(), inviter.getUniqueId());
-        inviter.sendMessage(Component.text("Вы пригласили игрока" + ChatColor.BLUE + target.getName() + ChatColor.RESET + "в пати"));
-        target.sendMessage(inviter.getName() + " пригласил вас в пати. Введите" + ChatColor.BLUE + " /party accept" + ChatColor.RESET + " или" + ChatColor.DARK_RED + " /party deny." + ChatColor.RED + " У вас есть 5 минут.");
-        Bukkit.getScheduler().runTaskLater(Rootinsland.getPlugin(Rootinsland.class), () -> {
+        inviter.sendMessage("Вы пригласили игрока " + target.getName() + " в пати.");
+        target.sendMessage(inviter.getName() + " пригласил вас в пати. Введите /party accept для принятия или /party deny для отклонения.");
+    
+        Bukkit.getScheduler().runTaskLater(Bukkit.getPluginManager().getPlugin("Rootinsland"), () -> {
             if (pendparties.containsKey(target.getUniqueId())) {
                 pendparties.remove(target.getUniqueId());
                 target.sendMessage("Ваше приглашение в пати от " + inviter.getName() + " истекло.");
                 inviter.sendMessage("Приглашение для " + target.getName() + " истекло.");
             }
-        }, 6000L);
+        }, 6000L);  // 5 минут (6000 тиков)
     }
     
 
@@ -94,6 +97,12 @@ public class TeamManager {
         Player inviter = Bukkit.getPlayer(inviterUUID);
         if (inviter == null) {
             player.sendMessage("Инвайтер больше не в игре.");
+            return;
+        }
+    
+        // Проверка, является ли игрок уже частью команды
+        if (parties.values().stream().anyMatch(team -> team.getMembers().contains(player.getUniqueId()))) {
+            player.sendMessage("Вы уже являетесь членом другой команды.");
             return;
         }
     
@@ -114,6 +123,7 @@ public class TeamManager {
         pendparties.remove(player.getUniqueId());
     }
     
+
     public void denyInvite(Player player) {
         if (pendparties.remove(player.getUniqueId()) != null) {
             player.sendMessage("Вы отклонили приглашение.");
@@ -123,91 +133,39 @@ public class TeamManager {
     }
 
     public void kickMember(Player kicker, Player target) {
+        // Проверка, является ли игрок кикнувшим владельцем пати или имеет права
         TeamYml team = getPlayerTeam(kicker);
         if (team == null) {
-            kicker.sendMessage("Вы не состоите в пати.");
+            kicker.sendMessage("Вы не являетесь участником пати.");
             return;
         }
     
+        // Если цель не является членом пати
         if (!team.getMembers().contains(target.getUniqueId())) {
-            kicker.sendMessage("Игрок не является участником вашей пати.");
+            kicker.sendMessage(target.getName() + " не является членом вашей пати.");
             return;
         }
     
-        if (!team.getOwnerUUID().equals(kicker.getUniqueId())) {
-            kicker.sendMessage("Только владелец команды может кикать участников.");
-            return;
-        }
+        // Удаляем игрока из пати (передаем true, чтобы указать, что это кик)
+        team.removeMember(target.getUniqueId(), true);
+        saveParty(kicker.getUniqueId());  // Сохраняем изменения в конфигурации
     
-        try {
-            team.removeMember(target.getUniqueId(), true);  // true - это кик
-        } catch (IllegalArgumentException e) {
-            kicker.sendMessage(e.getMessage());  // Сообщаем ошибку, если пытаются кикнуть владельца
-            return;
-        }
-    
-        // Отправляем уведомления
         kicker.sendMessage(target.getName() + " был кикнут из вашей пати.");
-        target.sendMessage("Вы были кикнуты из пати " + kicker.getName());
-    
-        // Сохраняем изменения
-        saveParty(team.getOwnerUUID());
+        target.sendMessage("Вы были кикнуты из пати " + kicker.getName() + ".");
     }
 
-    public TeamYml getPlayerTeam(Player player) {
-        for (TeamYml team : parties.values()) {
-            if (team.getMembers().contains(player.getUniqueId())) {
-                return team;  // Возвращаем команду, если игрок является ее участником
-            }
+    public void saveParty(UUID ownerUUID) {
+    TeamYml team = parties.get(ownerUUID);
+    if (team != null) {
+        // Сохраняем команду в файл конфигурации
+        List<String> members = new ArrayList<>();
+        for (UUID memberUUID : team.getMembers()) {
+            members.add(memberUUID.toString());
         }
-        return null;  // Если игрок не найден в ни одной команде
-    }
-    
-    
 
-    private void loadParties() {
-    for (String owner : config.getKeys(false)) {
-        UUID ownerUUID = UUID.fromString(owner);
-        Set<UUID> members = new HashSet<>();
-        for (String member : config.getStringList(owner)) {
-            members.add(UUID.fromString(member));
-        }
-        String ownerName = config.getString(owner + ".ownerName");
-
-        // Добавляем владельца в список участников
-        members.add(ownerUUID);
-
-        // Добавляем команду в Map
-        parties.put(ownerUUID, new TeamYml(ownerUUID, ownerName, members));
-    }
-}
-
-
-
-
-    
-    private void saveParty(UUID ownerUUID) {
-        TeamYml team = parties.get(ownerUUID);
-        List<String> memberUUIDs = new ArrayList<>();
-    
-    // Сохраняем всех участников, включая владельца
-        team.getMembers().forEach(uuid -> memberUUIDs.add(uuid.toString()));
-    
-        config.set(ownerUUID.toString(), memberUUIDs);  // Сохранение всех участников
-        config.set(ownerUUID.toString() + ".ownerName", team.getOwnerName()); // Сохранение имени владельца
-        saveConfig();
-}
-
-    
-    
-        
-
-    public void saveParties() {
-        for (UUID owner : parties.keySet()) {
-            saveParty(owner);
-        }
-    }
-     private void saveConfig() {
+        // Добавляем данные в конфиг
+        config.set(ownerUUID.toString() + ".ownername", Bukkit.getPlayer(ownerUUID).getName());  // Имя владельца
+        config.set(ownerUUID.toString() + ".members", members);  // Список членов
         try {
             config.save(file);
         } catch (IOException e) {
@@ -217,7 +175,27 @@ public class TeamManager {
 }
 
 
-    
+private void loadParties() {
+    for (String key : config.getKeys(false)) {
+        UUID ownerUUID = UUID.fromString(key);
+        
+        // Загружаем данные из конфигурации
+        String ownerName = config.getString(key + ".ownername");  // Имя владельца
+        List<String> membersList = config.getStringList(key + ".members");  // Список членов
+
+        Set<UUID> members = new HashSet<>();
+        for (String memberUUID : membersList) {
+            members.add(UUID.fromString(memberUUID));
+        }
+
+        // Создаем объект команды
+        TeamYml team = new TeamYml(ownerUUID, ownerName, members);
+        parties.put(ownerUUID, team);
+    }
+}
 
 
-
+    public TeamYml getPlayerTeam(Player player) {
+        return parties.get(player.getUniqueId());
+    }
+}
