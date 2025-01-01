@@ -1,8 +1,6 @@
 package io.github.nyg404.rootinsland;
 
 import io.github.nyg404.rootinsland.Chat.ChatListener;
-import io.github.nyg404.rootinsland.Commands.Commandslistner.BorderCheckCommand;
-import io.github.nyg404.rootinsland.Commands.Commandslistner.BorderDonatPlusCommand;
 import io.github.nyg404.rootinsland.Commands.Commandslistner.CommandsCreate;
 import io.github.nyg404.rootinsland.Commands.Commandslistner.CommandsIsland;
 import io.github.nyg404.rootinsland.Commands.Commandslistner.ReloadCommand;
@@ -86,8 +84,6 @@ public final class Rootinsland extends JavaPlugin {
         getCommand("reloadconfig").setExecutor(new ReloadCommand(this));
         getCommand("party").setExecutor(new TeamCommand(teamManager));
         getCommand("party").setTabCompleter(new TeamTabCompleter());
-        getCommand("bordercheck").setExecutor(new BorderCheckCommand(playerPermissions));
-        getCommand("borderupdate").setExecutor(new BorderDonatPlusCommand(playerPermissions, worldConfigManager));
 
         // Регистрация новых команд
 
